@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import io from 'socket.io-client';
+import { WS_BASE_URL } from '../config/environment';
 
-const SOCKET_URL = 'http://localhost:3000';
+const SOCKET_URL = WS_BASE_URL;
 
 // Socket compartido global (singleton)
 let sharedSocket: any = null;
