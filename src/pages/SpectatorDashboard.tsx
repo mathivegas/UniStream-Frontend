@@ -756,54 +756,96 @@ export default function SpectatorDashboard() {
           </Box>
         </Card>
 
-        {/* Progreso / Monedas / Acciones */}
-        <Card variant="soft" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1a1f3a' : undefined, color: darkMode ? '#fff' : undefined }}>
-          <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? '#fff' : undefined }}>Tu progreso</Typography>
-          <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined }}>Monedas: <b>{coins ?? '...'}</b></Typography>
-          <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined }}>Puntos: <b>{points ?? '...'}</b></Typography>
-          <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined, mb: 1 }}>Nivel: <b>{user?.level || 1}</b></Typography>
-
-          {/* Barra de progreso de nivel */}
-          {points !== null && user?.level && (
-            <Box sx={{ mt: 2, mb: 1 }}>
-              <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+        {/* Panel lateral derecho: Chat arriba, Progreso abajo */}
+        <Stack spacing={2} sx={{ flex: 1 }}>
+          {/* Chat */}
+          <Card variant="soft" className="floating-card" sx={{ p: 2, bgcolor: darkMode ? '#1a1f3a' : undefined, color: darkMode ? '#fff' : undefined }}>
+            <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? '#fff' : undefined }}>Chat</Typography>
+            <Box
+              ref={scrollRef}
+              sx={{ height: 220, overflowY: 'auto', bgcolor: darkMode ? '#0f1629' : '#fff', borderRadius: 12, p: 1, mb: 2, boxShadow: 'inset 0 0 6px rgba(0,0,0,.07)' }}
+            >
+              {(!selectedStreamerId || messages.length === 0) && (
                 <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
-                  {nextLevelInfo.isMaxLevel ? 'Nivel Máximo Alcanzado' : `Progreso al nivel ${nextLevelInfo.nextLevel}`}
+                  {selectedStreamerId ? 'No hay mensajes todavía. ¡Envía el primero!' : 'Elige un streamer para ver su chat.'}
                 </Typography>
-                <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
-                  {nextLevelInfo.isMaxLevel ? `${points} pts` : `${points} / ${nextLevelInfo.pointsNeeded} pts`}
-                </Typography>
-              </Stack>
-              <Box sx={{ 
-                width: '100%', 
-                height: 8, 
-                bgcolor: darkMode ? '#0f1629' : '#e0e0e0', 
-                borderRadius: 10, 
-                overflow: 'hidden',
-                position: 'relative'
-              }}>
-                <Box sx={{ 
-                  width: nextLevelInfo.isMaxLevel 
-                    ? '100%' 
-                    : `${Math.min(100, Math.max(0, ((points - nextLevelInfo.currentLevelPoints) / (nextLevelInfo.pointsNeeded - nextLevelInfo.currentLevelPoints)) * 100))}%`, 
-                  height: '100%', 
-                  bgcolor: user.level >= 10 ? '#f59e0b' : user.level >= 5 ? '#8b5cf6' : '#3b82f6',
-                  borderRadius: 10,
-                  transition: 'width 0.3s ease',
-                  boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
-                }} />
-              </Box>
+              )}
+              {messages.map((m, idx) => (
+                <Box key={`${m.ts}-${idx}`} sx={{ bgcolor: darkMode ? (idx % 2 === 0 ? '#1a1f3a' : '#0f1629') : (idx % 2 === 0 ? '#F1F6FF' : '#E8EEFF'), py: 1, px: 2, borderRadius: 10, mb: 1 }}>
+                  <Typography level="body-sm" sx={{ color: darkMode ? '#fff' : undefined }}>
+                    {m.userLevelAtSend >= 0 ? (
+                      <><b>[Nv {m.userLevelAtSend}] {m.userName}:</b> {m.text}</>
+                    ) : (
+                      <>{m.text}</>
+                    )}
+                  </Typography>
+                </Box>
+              ))}
             </Box>
-          )}
+            <Stack direction="row" spacing={1}>
+              <Input
+                fullWidth
+                placeholder={selectedStreamer ? `Mensaje para ${selectedStreamer.name}…` : 'Elige un streamer para chatear…'}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
+                disabled={!selectedStreamerId}
+              />
+              <Button variant="solid" onClick={handleSendMessage} className="effect-button" disabled={!selectedStreamerId}>
+                Enviar
+              </Button>
+            </Stack>
+          </Card>
 
-          <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap' }}>
-            {/* Botones de testing - comentados para producción */}
-            {/* {[100, 500, 1000].map((a) => (
-              <Button key={a} variant="soft" onClick={() => handleBuyCoins(a)} className="effect-button">+{a}</Button>
-            ))} */}
-            <Button variant="solid" color="primary" onClick={() => navigate('/recargar')} fullWidth>Recargar con tarjeta</Button>
-          </Stack>
-        </Card>
+          {/* Progreso / Monedas / Acciones */}
+          <Card variant="soft" className="floating-card" sx={{ p: 2, bgcolor: darkMode ? '#1a1f3a' : undefined, color: darkMode ? '#fff' : undefined }}>
+            <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? '#fff' : undefined }}>Tu progreso</Typography>
+            <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined }}>Monedas: <b>{coins ?? '...'}</b></Typography>
+            <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined }}>Puntos: <b>{points ?? '...'}</b></Typography>
+            <Typography level="body-md" sx={{ color: darkMode ? '#fff' : undefined, mb: 1 }}>Nivel: <b>{user?.level || 1}</b></Typography>
+
+            {/* Barra de progreso de nivel */}
+            {points !== null && user?.level && (
+              <Box sx={{ mt: 2, mb: 1 }}>
+                <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                  <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
+                    {nextLevelInfo.isMaxLevel ? 'Nivel Máximo Alcanzado' : `Progreso al nivel ${nextLevelInfo.nextLevel}`}
+                  </Typography>
+                  <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
+                    {nextLevelInfo.isMaxLevel ? `${points} pts` : `${points} / ${nextLevelInfo.pointsNeeded} pts`}
+                  </Typography>
+                </Stack>
+                <Box sx={{ 
+                  width: '100%', 
+                  height: 8, 
+                  bgcolor: darkMode ? '#0f1629' : '#e0e0e0', 
+                  borderRadius: 10, 
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}>
+                  <Box sx={{ 
+                    width: nextLevelInfo.isMaxLevel 
+                      ? '100%' 
+                      : `${Math.min(100, Math.max(0, ((points - nextLevelInfo.currentLevelPoints) / (nextLevelInfo.pointsNeeded - nextLevelInfo.currentLevelPoints)) * 100))}%`, 
+                    height: '100%', 
+                    bgcolor: user.level >= 10 ? '#f59e0b' : user.level >= 5 ? '#8b5cf6' : '#3b82f6',
+                    borderRadius: 10,
+                    transition: 'width 0.3s ease',
+                    boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+                  }} />
+                </Box>
+              </Box>
+            )}
+
+            <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: 'wrap' }}>
+              {/* Botones de testing - comentados para producción */}
+              {/* {[100, 500, 1000].map((a) => (
+                <Button key={a} variant="soft" onClick={() => handleBuyCoins(a)} className="effect-button">+{a}</Button>
+              ))} */}
+              <Button variant="solid" color="primary" onClick={() => navigate('/recargar')} fullWidth>Recargar con tarjeta</Button>
+            </Stack>
+          </Card>
+        </Stack>
       </Stack>
 
       {/* Regalos para enviar (al streamer seleccionado) */}
@@ -859,45 +901,6 @@ export default function SpectatorDashboard() {
             ))}
           </tbody>
         </Table>
-      </Card>
-
-      {/* Chat persistente por streamer */}
-      <Card variant="soft" className="floating-card" sx={{ p: 2, bgcolor: darkMode ? '#1a1f3a' : undefined, color: darkMode ? '#fff' : undefined }}>
-        <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? '#fff' : undefined }}>Chat</Typography>
-        <Box
-          ref={scrollRef}
-          sx={{ height: 220, overflowY: 'auto', bgcolor: darkMode ? '#0f1629' : '#fff', borderRadius: 12, p: 1, mb: 2, boxShadow: 'inset 0 0 6px rgba(0,0,0,.07)' }}
-        >
-          {(!selectedStreamerId || messages.length === 0) && (
-            <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
-              {selectedStreamerId ? 'No hay mensajes todavía. ¡Envía el primero!' : 'Elige un streamer para ver su chat.'}
-            </Typography>
-          )}
-          {messages.map((m, idx) => (
-            <Box key={`${m.ts}-${idx}`} sx={{ bgcolor: darkMode ? (idx % 2 === 0 ? '#1a1f3a' : '#0f1629') : (idx % 2 === 0 ? '#F1F6FF' : '#E8EEFF'), py: 1, px: 2, borderRadius: 10, mb: 1 }}>
-              <Typography level="body-sm" sx={{ color: darkMode ? '#fff' : undefined }}>
-                {m.userLevelAtSend >= 0 ? (
-                  <><b>[Nv {m.userLevelAtSend}] {m.userName}:</b> {m.text}</>
-                ) : (
-                  <>{m.text}</>
-                )}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-        <Stack direction="row" spacing={1}>
-          <Input
-            fullWidth
-            placeholder={selectedStreamer ? `Mensaje para ${selectedStreamer.name}…` : 'Elige un streamer para chatear…'}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleSendMessage(); } }}
-            disabled={!selectedStreamerId}
-          />
-          <Button variant="solid" onClick={handleSendMessage} className="effect-button" disabled={!selectedStreamerId}>
-            Enviar
-          </Button>
-        </Stack>
       </Card>
     </Box>
   );
