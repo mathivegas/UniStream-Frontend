@@ -14,6 +14,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useAgoraStreaming } from '../hooks/useAgoraStreaming';
 import { useSocket, type ChatMessage } from '../hooks/useChat';
+import { API_BASE_URL } from '../config/environment';
 
 type Gift = { 
   id: string;
@@ -195,7 +196,7 @@ export default function SpectatorDashboard() {
       try {
         console.log('📊 Cargando progreso para streamer:', selectedStreamerId);
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:3000/api/spectators/me/progress/${selectedStreamerId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/spectators/me/progress/${selectedStreamerId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -305,7 +306,7 @@ export default function SpectatorDashboard() {
         const token = localStorage.getItem('authToken');
         console.log('📡 Cargando datos del espectador (solo monedas)');
         
-        const response = await fetch(`http://localhost:3000/api/spectators/me`, {
+        const response = await fetch(`${API_BASE_URL}/api/spectators/me`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
@@ -391,7 +392,7 @@ export default function SpectatorDashboard() {
     const fetchGifts = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:3000/api/gifts/${selectedStreamerId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/gifts/${selectedStreamerId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -449,7 +450,7 @@ export default function SpectatorDashboard() {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/gifts/send', {
+      const response = await fetch('${API_BASE_URL}/api/gifts/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -475,7 +476,7 @@ export default function SpectatorDashboard() {
       // Actualizar puntos del espectador en la base de datos
       try {
         const token = localStorage.getItem('authToken');
-        const pointsResponse = await fetch(`http://localhost:3000/api/spectators/me/points`, {
+        const pointsResponse = await fetch(`${API_BASE_URL}/api/spectators/me/points`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -547,7 +548,7 @@ export default function SpectatorDashboard() {
     // Actualizar puntos en la base de datos (+1 por mensaje)
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3000/api/spectators/me/points`, {
+      const response = await fetch(`${API_BASE_URL}/api/spectators/me/points`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

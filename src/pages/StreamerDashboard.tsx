@@ -17,6 +17,7 @@ import { generateChannelName } from '../services/agoraConfig';
 import { useSocket, type ChatMessage } from '../hooks/useChat';
 import { User } from '../types';
 import LevelConfiguration from '../components/LevelConfiguration/LevelConfiguration';
+import { API_BASE_URL } from '../config/environment';
 
 type Gift = { 
   id?: string;
@@ -77,7 +78,7 @@ export default function StreamerDashboard() {
     if (!currentUser?.id) return;
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3000/api/gifts/history/${currentUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/gifts/history/${currentUser.id}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
@@ -153,7 +154,7 @@ export default function StreamerDashboard() {
       try {
         console.log('Verificando si estaba en vivo...');
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:3000/api/streamers`, {
+        const response = await fetch(`${API_BASE_URL}/api/streamers`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -205,7 +206,7 @@ export default function StreamerDashboard() {
     const loadStreamerData = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`http://localhost:3000/api/streamers/${currentUser.id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/streamers/${currentUser.id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -352,7 +353,7 @@ export default function StreamerDashboard() {
       // Notificar al backend
       const token = localStorage.getItem('authToken');
       console.log('Notificando al backend...');
-      const response = await fetch('http://localhost:3000/api/streaming/start', {
+      const response = await fetch('${API_BASE_URL}/api/streaming/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -397,7 +398,7 @@ export default function StreamerDashboard() {
 
       // Notificar al backend sobre el fin del stream
       const token = localStorage.getItem('authToken');
-      await fetch('http://localhost:3000/api/streaming/stop', {
+      await fetch('${API_BASE_URL}/api/streaming/stop', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -407,7 +408,7 @@ export default function StreamerDashboard() {
 
       // Actualizar horas en la base de datos
       try {
-        const hoursResponse = await fetch(`http://localhost:3000/api/streamers/${currentUser?.id}/hours`, {
+        const hoursResponse = await fetch(`${API_BASE_URL}/api/streamers/${currentUser?.id}/hours`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -453,7 +454,7 @@ export default function StreamerDashboard() {
     }
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/gifts', {
+      const response = await fetch('${API_BASE_URL}/api/gifts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -476,7 +477,7 @@ export default function StreamerDashboard() {
     if (!window.confirm('¿Eliminar este regalo?')) return;
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:3000/api/gifts/${giftId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/gifts/${giftId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -8,6 +8,7 @@ import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../config/environment';
 
 const Recarga = (): React.ReactElement | null => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const Recarga = (): React.ReactElement | null => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/coins/purchase', {
+      const response = await fetch('${API_BASE_URL}/api/coins/purchase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

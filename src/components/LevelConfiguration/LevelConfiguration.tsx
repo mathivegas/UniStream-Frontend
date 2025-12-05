@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Card, Typography, Table, Button, Input, IconButton } from '@mui/joy';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config/environment';
 
 interface Level {
     id: number;
@@ -28,7 +29,7 @@ export default function LevelConfiguration({ streamerId, darkMode }: LevelConfig
 
     const fetchLevels = async () => {
         try {
-            const response = await axios.get(`http://localhost:3000/api/streamers/${streamerId}/levels`);
+            const response = await axios.get(`${API_BASE_URL}/api/streamers/${streamerId}/levels`);
             setLevels(response.data);
             if (response.data.length > 0) {
                 const maxLevel = Math.max(...response.data.map((l: Level) => l.levelNumber));
@@ -56,7 +57,7 @@ export default function LevelConfiguration({ streamerId, darkMode }: LevelConfig
         try {
             const token = localStorage.getItem('authToken');
             await axios.put(
-                `http://localhost:3000/api/streamers/${streamerId}/levels/${levelId}`,
+                `${API_BASE_URL}/api/streamers/${streamerId}/levels/${levelId}`,
                 editForm,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -77,7 +78,7 @@ export default function LevelConfiguration({ streamerId, darkMode }: LevelConfig
         try {
             const token = localStorage.getItem('authToken');
             await axios.delete(
-                `http://localhost:3000/api/streamers/${streamerId}/levels/${levelId}`,
+                `${API_BASE_URL}/api/streamers/${streamerId}/levels/${levelId}`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             await fetchLevels();
@@ -99,7 +100,7 @@ export default function LevelConfiguration({ streamerId, darkMode }: LevelConfig
         try {
             const token = localStorage.getItem('authToken');
             await axios.post(
-                `http://localhost:3000/api/streamers/${streamerId}/levels`,
+                `${API_BASE_URL}/api/streamers/${streamerId}/levels`,
                 newLevel,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
