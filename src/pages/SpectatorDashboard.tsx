@@ -450,7 +450,7 @@ export default function SpectatorDashboard() {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('${API_BASE_URL}/api/gifts/send', {
+      const response = await fetch(`${API_BASE_URL}/api/gifts/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
