@@ -80,7 +80,7 @@ const Recarga = (): React.ReactElement | null => {
 
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('${API_BASE_URL}/api/coins/purchase', {
+      const response = await fetch(`${API_BASE_URL}/api/coins/purchase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
