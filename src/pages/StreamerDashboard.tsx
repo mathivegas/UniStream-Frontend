@@ -353,7 +353,7 @@ export default function StreamerDashboard() {
       // Notificar al backend
       const token = localStorage.getItem('authToken');
       console.log('Notificando al backend...');
-      const response = await fetch('${API_BASE_URL}/api/streaming/start', {
+      const response = await fetch(`${API_BASE_URL}/api/streaming/start`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -398,7 +398,7 @@ export default function StreamerDashboard() {
 
       // Notificar al backend sobre el fin del stream
       const token = localStorage.getItem('authToken');
-      await fetch('${API_BASE_URL}/api/streaming/stop', {
+      await fetch(`${API_BASE_URL}/api/streaming/stop`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -454,7 +454,7 @@ export default function StreamerDashboard() {
     }
     try {
       const token = localStorage.getItem('authToken');
-      const response = await fetch('${API_BASE_URL}/api/gifts', {
+      const response = await fetch(`${API_BASE_URL}/api/gifts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
