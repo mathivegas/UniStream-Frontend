@@ -588,6 +588,7 @@ export default function StreamerDashboard() {
       </Stack>
 
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
+        {/* TRANSMISIÓN (IZQUIERDA) */}
         <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
           <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Transmisión</Typography>
           
@@ -683,7 +684,68 @@ export default function StreamerDashboard() {
           )}
         </Card>
 
-        {/* MÉTRICAS DE TRANSMISIÓN */}
+        {/* CHAT (MEDIO) */}
+        <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
+          <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Chat</Typography>
+          <Box
+            ref={chatScrollRef}
+            sx={{ 
+              height: 280, 
+              overflowY: 'auto', 
+              bgcolor: darkMode ? '#0f1629' : '#fff', 
+              borderRadius: 2, 
+              p: 2, 
+              mb: 2,
+              boxShadow: 'inset 0 0 6px rgba(0,0,0,.07)' 
+            }}
+          >
+            {messages.length === 0 ? (
+              <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
+                No hay mensajes todavía. Escribe algo o espera a que los espectadores chateen.
+              </Typography>
+            ) : (
+              messages.map((m, idx) => (
+                <Box 
+                  key={`${m.ts}-${idx}`} 
+                  sx={{ 
+                    bgcolor: darkMode ? (idx % 2 === 0 ? '#1a1f3a' : '#0f1629') : (idx % 2 === 0 ? '#F1F6FF' : '#E8EEFF'), 
+                    py: 1, 
+                    px: 2, 
+                    borderRadius: 2, 
+                    mb: 1 
+                  }}
+                >
+                  <Typography level="body-sm" sx={{ color: darkMode ? '#fff' : undefined }}>
+                    {m.userLevelAtSend >= 0 ? (
+                      <><b>[Nv {m.userLevelAtSend}] {m.userName}:</b> {m.text}</>
+                    ) : (
+                      <>{m.text}</>
+                    )}
+                  </Typography>
+                </Box>
+              ))
+            )}
+          </Box>
+          <Stack direction="row" spacing={1}>
+            <Input
+              fullWidth
+              placeholder="Escribe un mensaje..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => { 
+                if (e.key === 'Enter') { 
+                  e.preventDefault(); 
+                  handleSendMessage(); 
+                } 
+              }}
+            />
+            <Button variant="solid" onClick={handleSendMessage}>
+              Enviar
+            </Button>
+          </Stack>
+        </Card>
+
+        {/* MÉTRICAS (DERECHA) */}
         <Card variant="outlined" className="floating-card" sx={{ 
           flex: 1, 
           p: 2, 
@@ -744,66 +806,6 @@ export default function StreamerDashboard() {
                 {currentLevel < 5 && ' 💚'}
               </Typography>
             </Box>
-          </Stack>
-        </Card>
-
-        <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
-          <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Chat</Typography>
-          <Box
-            ref={chatScrollRef}
-            sx={{ 
-              height: 280, 
-              overflowY: 'auto', 
-              bgcolor: darkMode ? '#0f1629' : '#fff', 
-              borderRadius: 2, 
-              p: 2, 
-              mb: 2,
-              boxShadow: 'inset 0 0 6px rgba(0,0,0,.07)' 
-            }}
-          >
-            {messages.length === 0 ? (
-              <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary' }}>
-                No hay mensajes todavía. Escribe algo o espera a que los espectadores chateen.
-              </Typography>
-            ) : (
-              messages.map((m, idx) => (
-                <Box 
-                  key={`${m.ts}-${idx}`} 
-                  sx={{ 
-                    bgcolor: darkMode ? (idx % 2 === 0 ? '#1a1f3a' : '#0f1629') : (idx % 2 === 0 ? '#F1F6FF' : '#E8EEFF'), 
-                    py: 1, 
-                    px: 2, 
-                    borderRadius: 2, 
-                    mb: 1 
-                  }}
-                >
-                  <Typography level="body-sm" sx={{ color: darkMode ? '#fff' : undefined }}>
-                    {m.userLevelAtSend >= 0 ? (
-                      <><b>[Nv {m.userLevelAtSend}] {m.userName}:</b> {m.text}</>
-                    ) : (
-                      <>{m.text}</>
-                    )}
-                  </Typography>
-                </Box>
-              ))
-            )}
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Input
-              fullWidth
-              placeholder="Escribe un mensaje..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyDown={(e) => { 
-                if (e.key === 'Enter') { 
-                  e.preventDefault(); 
-                  handleSendMessage(); 
-                } 
-              }}
-            />
-            <Button variant="solid" onClick={handleSendMessage}>
-              Enviar
-            </Button>
           </Stack>
         </Card>
       </Stack>
