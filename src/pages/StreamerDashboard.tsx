@@ -446,6 +446,7 @@ export default function StreamerDashboard() {
   };
 
   const [newGift, setNewGift] = useState<Gift>({ name: '', emoji: '', cost: 0, points: 0, description: '' });
+  const [editingGift, setEditingGift] = useState<Gift | null>(null);
   
   const addGift = async () => {
     if (!newGift.name || !newGift.emoji || newGift.cost <= 0 || newGift.points <= 0) {
@@ -486,6 +487,46 @@ export default function StreamerDashboard() {
     } catch (error) {
       console.error('Error:', error);
       alert('Error al eliminar regalo');
+    }
+  };
+
+  const startEditGift = (gift: Gift) => {
+    setEditingGift({ ...gift });
+  };
+
+  const cancelEditGift = () => {
+    setEditingGift(null);
+  };
+
+  const saveEditGift = async () => {
+    if (!editingGift || !editingGift.id) return;
+    if (!editingGift.name || !editingGift.emoji || editingGift.cost <= 0 || editingGift.points <= 0) {
+      alert('Por favor completa todos los campos (nombre, emoji, costo, puntos)');
+      return;
+    }
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/gifts/${editingGift.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: editingGift.name,
+          emoji: editingGift.emoji,
+          cost: editingGift.cost,
+          points: editingGift.points,
+          description: editingGift.description
+        }),
+      });
+      if (!response.ok) throw new Error('Error al actualizar regalo');
+      const updated = await response.json();
+      setGifts((arr) => arr.map(g => g.id === updated.id ? updated : g));
+      setEditingGift(null);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al actualizar regalo');
     }
   };
 
@@ -813,6 +854,49 @@ export default function StreamerDashboard() {
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mb: 3 }}>
         <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
           <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Regalos configurados</Typography>
+          
+          {editingGift && (
+            <Box sx={{ mb: 2, p: 2, bgcolor: darkMode ? '#0f1629' : '#f0f4ff', borderRadius: 2, border: '2px solid #3b82f6' }}>
+              <Typography level="title-md" sx={{ mb: 1, color: darkMode ? 'white' : 'inherit' }}>✏️ Editando: {editingGift.name}</Typography>
+              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                <Input 
+                  size="sm" 
+                  placeholder="🎁" 
+                  value={editingGift.emoji} 
+                  onChange={(e) => setEditingGift({ ...editingGift, emoji: e.target.value })} 
+                  sx={{ maxWidth: 80 }}
+                />
+                <Input 
+                  size="sm" 
+                  placeholder="Nombre" 
+                  value={editingGift.name} 
+                  onChange={(e) => setEditingGift({ ...editingGift, name: e.target.value })} 
+                  sx={{ flex: 1 }}
+                />
+                <Input 
+                  size="sm" 
+                  type="number" 
+                  placeholder="Costo" 
+                  value={editingGift.cost} 
+                  onChange={(e) => setEditingGift({ ...editingGift, cost: Number(e.target.value) })} 
+                  sx={{ maxWidth: 100 }}
+                />
+                <Input 
+                  size="sm" 
+                  type="number" 
+                  placeholder="Puntos" 
+                  value={editingGift.points} 
+                  onChange={(e) => setEditingGift({ ...editingGift, points: Number(e.target.value) })} 
+                  sx={{ maxWidth: 100 }}
+                />
+              </Stack>
+              <Stack direction="row" spacing={1}>
+                <Button size="sm" variant="solid" color="primary" onClick={saveEditGift}>Guardar</Button>
+                <Button size="sm" variant="outlined" color="neutral" onClick={cancelEditGift}>Cancelar</Button>
+              </Stack>
+            </Box>
+          )}
+
           <Table variant="plain" aria-label="regalos-config">
             <thead>
               <tr>
@@ -820,7 +904,7 @@ export default function StreamerDashboard() {
                 <th><Typography level="body-sm" sx={{ color: darkMode ? 'black' : 'inherit' }}>Nombre</Typography></th>
                 <th><Typography level="body-sm" sx={{ color: darkMode ? 'black' : 'inherit' }}>Costo</Typography></th>
                 <th><Typography level="body-sm" sx={{ color: darkMode ? 'black' : 'inherit' }}>Puntos</Typography></th>
-                <th></th>
+                <th><Typography level="body-sm" sx={{ color: darkMode ? 'black' : 'inherit' }}>Acciones</Typography></th>
               </tr>
             </thead>
             <tbody>
@@ -830,7 +914,12 @@ export default function StreamerDashboard() {
                   <td><Typography level="body-md" sx={{ color: darkMode ? '#e2e8f0' : 'inherit' }}>{g.name}</Typography></td>
                   <td><Typography level="body-md" sx={{ color: darkMode ? '#e2e8f0' : 'inherit' }}>{g.cost}</Typography></td>
                   <td><Typography level="body-md" sx={{ color: darkMode ? '#e2e8f0' : 'inherit' }}>{g.points}</Typography></td>
-                  <td><Button size="sm" variant="solid" color="danger" onClick={() => deleteGift(g.id!)}>Eliminar</Button></td>
+                  <td>
+                    <Stack direction="row" spacing={1}>
+                      <Button size="sm" variant="soft" color="primary" onClick={() => startEditGift(g)}>Editar</Button>
+                      <Button size="sm" variant="solid" color="danger" onClick={() => deleteGift(g.id!)}>Eliminar</Button>
+                    </Stack>
+                  </td>
                 </tr>
               ))}
               <tr>
