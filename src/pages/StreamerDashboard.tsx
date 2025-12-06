@@ -111,6 +111,9 @@ export default function StreamerDashboard() {
     isJoined,
     isPublishing,
     localVideoRef,
+    isScreenSharing,
+    startScreenShare,
+    stopScreenShare,
   } = useAgoraStreaming({
     channelName,
     isHost: true,
@@ -685,9 +688,38 @@ export default function StreamerDashboard() {
               <Typography level="body-md" sx={{ mt: 1, color: darkMode ? '#e2e8f0' : 'inherit' }}>
                 <b>En vivo</b> — Duración: {startTs ? (liveHours - hours).toFixed(2) : '0.00'} h
               </Typography>
-              <Button variant="solid" color="danger" onClick={handleStopStreaming} className="effect-button" sx={{ mt: 1 }}>
-                Detener transmisión
-              </Button>
+              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                <Button 
+                  variant="solid" 
+                  color="danger" 
+                  onClick={handleStopStreaming} 
+                  className="effect-button"
+                  sx={{ flex: 1 }}
+                >
+                  Detener transmisión
+                </Button>
+                {!isScreenSharing ? (
+                  <Button 
+                    variant="solid" 
+                    color="primary" 
+                    onClick={startScreenShare}
+                    className="effect-button"
+                    sx={{ flex: 1 }}
+                  >
+                    🖥️ Compartir pantalla
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="solid" 
+                    color="warning" 
+                    onClick={stopScreenShare}
+                    className="effect-button"
+                    sx={{ flex: 1 }}
+                  >
+                    📹 Volver a cámara
+                  </Button>
+                )}
+              </Stack>
             </>
           )}
           <Typography level="body-md" sx={{ mt: 2, color: darkMode ? '#e2e8f0' : 'inherit' }}>Horas transmitidas: <b>{liveHours.toFixed(2)}</b></Typography>

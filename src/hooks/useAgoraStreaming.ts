@@ -3,6 +3,7 @@ import AgoraRTC, {
   IAgoraRTCClient,
   ICameraVideoTrack,
   IMicrophoneAudioTrack,
+  ILocalVideoTrack,
 } from 'agora-rtc-sdk-ng';
 import { AGORA_APP_ID, generateUID } from '../services/agoraConfig';
 
@@ -17,6 +18,8 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
   );
   const [localVideoTrack, setLocalVideoTrack] = useState<ICameraVideoTrack | null>(null);
   const [localAudioTrack, setLocalAudioTrack] = useState<IMicrophoneAudioTrack | null>(null);
+  const [screenTrack, setScreenTrack] = useState<ILocalVideoTrack | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [isJoined, setIsJoined] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [remoteUsers, setRemoteUsers] = useState<any[]>([]);
@@ -218,12 +221,19 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
         localAudioTrack.close();
         console.log('⏹️ Audio local cerrado');
       }
+      if (screenTrack) {
+        screenTrack.stop();
+        screenTrack.close();
+        console.log('⏹️ Pantalla compartida cerrada');
+      }
 
       // Salir del canal
       await client.leave();
 
       setLocalVideoTrack(null);
       setLocalAudioTrack(null);
+      setScreenTrack(null);
+      setIsScreenSharing(false);
       setIsJoined(false);
       setIsPublishing(false);
       setRemoteUsers([]);
@@ -234,9 +244,123 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
       // Forzar limpieza de estado incluso si hay error
       setLocalVideoTrack(null);
       setLocalAudioTrack(null);
+      setScreenTrack(null);
+      setIsScreenSharing(false);
       setIsJoined(false);
       setIsPublishing(false);
       setRemoteUsers([]);
+    }
+  };
+
+  // Iniciar compartir pantalla
+  const startScreenShare = async () => {
+    if (!isJoined || !isHost) {
+      console.warn('Debes estar en vivo para compartir pantalla');
+      return;
+    }
+
+    try {
+      console.log('🖥️ Iniciando compartir pantalla...');
+      
+      // Crear track de pantalla
+      const screenVideoTrack = await AgoraRTC.createScreenVideoTrack({
+        encoderConfig: {
+          width: 1920,
+          height: 1080,
+          frameRate: 15,
+          bitrateMin: 600,
+          bitrateMax: 2000,
+        }
+      }, 'auto'); // 'auto' permite compartir pantalla o ventana
+      
+      // Manejar cuando el usuario cancela compartir pantalla desde el navegador
+      if (Array.isArray(screenVideoTrack)) {
+        // Si incluye audio del sistema
+        const [videoTrack, audioTrack] = screenVideoTrack;
+        videoTrack.on('track-ended', () => {
+          console.log('🛑 Usuario detuvo compartir pantalla');
+          stopScreenShare();
+        });
+        
+        // Despublicar video de cámara y publicar pantalla
+        if (localVideoTrack) {
+          await client.unpublish([localVideoTrack]);
+          console.log('📹 Video de cámara despublicado');
+        }
+        
+        await client.publish([videoTrack, audioTrack]);
+        setScreenTrack(videoTrack);
+        setIsScreenSharing(true);
+        
+        // Reproducir pantalla en el contenedor local
+        if (localVideoRef.current) {
+          videoTrack.play(localVideoRef.current);
+        }
+        
+        console.log('✅ Compartiendo pantalla con audio del sistema');
+      } else {
+        // Solo video de pantalla
+        screenVideoTrack.on('track-ended', () => {
+          console.log('🛑 Usuario detuvo compartir pantalla');
+          stopScreenShare();
+        });
+        
+        // Despublicar video de cámara y publicar pantalla
+        if (localVideoTrack) {
+          await client.unpublish([localVideoTrack]);
+          console.log('📹 Video de cámara despublicado');
+        }
+        
+        await client.publish([screenVideoTrack]);
+        setScreenTrack(screenVideoTrack);
+        setIsScreenSharing(true);
+        
+        // Reproducir pantalla en el contenedor local
+        if (localVideoRef.current) {
+          screenVideoTrack.play(localVideoRef.current);
+        }
+        
+        console.log('✅ Compartiendo pantalla');
+      }
+    } catch (error: any) {
+      console.error('❌ Error al compartir pantalla:', error);
+      
+      // Si el usuario cancela la selección de pantalla
+      if (error.code === 'PERMISSION_DENIED' || error.name === 'NotAllowedError') {
+        console.log('⚠️ Usuario canceló compartir pantalla');
+      } else {
+        alert('Error al compartir pantalla: ' + error.message);
+      }
+    }
+  };
+
+  // Detener compartir pantalla y volver a la cámara
+  const stopScreenShare = async () => {
+    if (!screenTrack) return;
+
+    try {
+      console.log('🛑 Deteniendo compartir pantalla...');
+      
+      // Despublicar pantalla
+      await client.unpublish([screenTrack]);
+      screenTrack.stop();
+      screenTrack.close();
+      setScreenTrack(null);
+      setIsScreenSharing(false);
+      
+      // Volver a publicar video de cámara
+      if (localVideoTrack) {
+        await client.publish([localVideoTrack]);
+        
+        // Reproducir cámara nuevamente
+        if (localVideoRef.current) {
+          localVideoTrack.play(localVideoRef.current);
+        }
+        
+        console.log('✅ Volviendo a transmitir desde la cámara');
+      }
+    } catch (error) {
+      console.error('❌ Error al detener compartir pantalla:', error);
     }
   };
 
@@ -252,5 +376,8 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
     localAudioTrack,
     audioBlocked,
     enableAudio,
+    isScreenSharing,
+    startScreenShare,
+    stopScreenShare,
   };
 };
