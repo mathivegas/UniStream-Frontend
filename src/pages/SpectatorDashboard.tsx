@@ -687,7 +687,16 @@ export default function SpectatorDashboard() {
             </Select>
           </Box>
 
-          <Box sx={{ aspectRatio: '16 / 9', width: '100%', bgcolor: '#0f172a', display: 'grid', placeItems: 'center', color: '#93c5fd', position: 'relative' }}>
+          <Box sx={{ 
+            aspectRatio: { xs: '9 / 16', sm: '16 / 9' }, // Portrait en móvil, landscape en desktop
+            maxHeight: { xs: '60vh', sm: 'auto' }, // Limitar altura en móviles
+            width: '100%', 
+            bgcolor: '#0f172a', 
+            display: 'grid', 
+            placeItems: 'center', 
+            color: '#93c5fd', 
+            position: 'relative' 
+          }}>
             {isWatching && isJoined && selectedStreamer?.isLive ? (
               <>
                 <div

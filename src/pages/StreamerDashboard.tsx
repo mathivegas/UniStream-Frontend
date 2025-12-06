@@ -643,7 +643,8 @@ export default function StreamerDashboard() {
             <Box
               sx={{
                 width: '100%',
-                aspectRatio: '16 / 9',
+                aspectRatio: { xs: '9 / 16', sm: '16 / 9' }, // Portrait en móvil, landscape en desktop
+                maxHeight: { xs: '60vh', sm: 'auto' }, // Limitar altura en móviles
                 bgcolor: '#000',
                 borderRadius: 2,
                 mb: 2,
@@ -659,7 +660,7 @@ export default function StreamerDashboard() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'contain'
+                  objectFit: 'cover' // Cambiado de 'contain' a 'cover' para llenar el espacio
                 }}
               />
               <Box
