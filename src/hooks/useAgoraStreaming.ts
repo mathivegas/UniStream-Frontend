@@ -158,9 +158,9 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
             encoderConfig: {
               width: 640,
               height: 480,
-              frameRate: 60,
-              bitrateMin: 800,
-              bitrateMax: 2000,
+              frameRate: 30,
+              bitrateMin: 600,
+              bitrateMax: 1500,
             }
           });
           console.log('✅ Video track creado:', videoTrack.getTrackId());
@@ -267,9 +267,9 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
         encoderConfig: {
           width: 1920,
           height: 1080,
-          frameRate: 60,
-          bitrateMin: 1500,
-          bitrateMax: 4000,
+          frameRate: 30,
+          bitrateMin: 1000,
+          bitrateMax: 3000,
         }
       }, 'auto'); // 'auto' permite compartir pantalla o ventana
       
