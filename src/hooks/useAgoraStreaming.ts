@@ -7,6 +7,11 @@ import AgoraRTC, {
 } from 'agora-rtc-sdk-ng';
 import { AGORA_APP_ID, generateUID } from '../services/agoraConfig';
 
+// Debug mode - solo logs en desarrollo
+const DEBUG = process.env.NODE_ENV === 'development';
+const log = (...args: any[]) => DEBUG && console.log(...args);
+const error = (...args: any[]) => console.error(...args); // Errores siempre se muestran
+
 interface UseAgoraStreamingProps {
   channelName: string | null;
   isHost: boolean; // true = streamer (publica), false = espectador (solo ve)
@@ -24,9 +29,31 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
   const [isPublishing, setIsPublishing] = useState(false);
   const [remoteUsers, setRemoteUsers] = useState<any[]>([]);
   const [audioBlocked, setAudioBlocked] = useState(false);
+  const [screenShareSupported, setScreenShareSupported] = useState(false);
 
   const localVideoRef = useRef<HTMLDivElement>(null);
   const remoteVideoRef = useRef<HTMLDivElement>(null);
+
+  // Verificar si el navegador soporta compartir pantalla
+  useEffect(() => {
+    const checkScreenShareSupport = async () => {
+      try {
+        // Verificar si la API existe
+        const isSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+        setScreenShareSupported(isSupported);
+        
+        if (!isSupported) {
+          log('📱 Compartir pantalla no soportado en este dispositivo/navegador');
+        } else {
+          log('🖥️ Compartir pantalla disponible');
+        }
+      } catch (error) {
+        setScreenShareSupported(false);
+      }
+    };
+    
+    checkScreenShareSupport();
+  }, []);
 
   // Función para activar audio manualmente
   const enableAudio = () => {
@@ -254,6 +281,12 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
 
   // Iniciar compartir pantalla
   const startScreenShare = async () => {
+    // Verificar si el navegador soporta compartir pantalla
+    if (!screenShareSupported) {
+      alert('❌ Tu navegador o dispositivo no soporta compartir pantalla.\n\n📱 En móviles, esta función no está disponible. Usa un navegador de escritorio (Chrome, Firefox, Edge) para compartir pantalla.');
+      return;
+    }
+
     if (!isJoined || !isHost) {
       console.warn('Debes estar en vivo para compartir pantalla');
       return;
@@ -377,6 +410,7 @@ export const useAgoraStreaming = ({ channelName, isHost }: UseAgoraStreamingProp
     audioBlocked,
     enableAudio,
     isScreenSharing,
+    screenShareSupported,
     startScreenShare,
     stopScreenShare,
   };

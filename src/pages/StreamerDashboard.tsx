@@ -114,6 +114,7 @@ export default function StreamerDashboard() {
     isPublishing,
     localVideoRef,
     isScreenSharing,
+    screenShareSupported,
     startScreenShare,
     stopScreenShare,
   } = useAgoraStreaming({
@@ -701,26 +702,31 @@ export default function StreamerDashboard() {
                 >
                   Detener transmisión
                 </Button>
-                {!isScreenSharing ? (
-                  <Button 
-                    variant="solid" 
-                    color="primary" 
-                    onClick={startScreenShare}
-                    className="effect-button"
-                    sx={{ flex: 1 }}
-                  >
-                    🖥️ Compartir pantalla
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="solid" 
-                    color="warning" 
-                    onClick={stopScreenShare}
-                    className="effect-button"
-                    sx={{ flex: 1 }}
-                  >
-                    📹 Volver a cámara
-                  </Button>
+                {/* Solo mostrar botón de compartir pantalla si el navegador lo soporta */}
+                {screenShareSupported && (
+                  <>
+                    {!isScreenSharing ? (
+                      <Button 
+                        variant="solid" 
+                        color="primary" 
+                        onClick={startScreenShare}
+                        className="effect-button"
+                        sx={{ flex: 1 }}
+                      >
+                        🖥️ Compartir pantalla
+                      </Button>
+                    ) : (
+                      <Button 
+                        variant="solid" 
+                        color="warning" 
+                        onClick={stopScreenShare}
+                        className="effect-button"
+                        sx={{ flex: 1 }}
+                      >
+                        📹 Volver a cámara
+                      </Button>
+                    )}
+                  </>
                 )}
               </Stack>
             </>
