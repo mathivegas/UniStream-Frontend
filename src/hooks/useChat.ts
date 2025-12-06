@@ -23,19 +23,29 @@ export type GiftNotification = {
   giftPoints: number;
 };
 
+export type Viewer = {
+  socketId: string;
+  userId: string | null;
+  userName: string;
+  joinedAt: string;
+};
+
 // Hook unificado que maneja todo: chat, notificaciones de regalos y actualización de lista
 export function useSocket(streamerId: string | null, options?: {
   userName?: string;
+  userId?: string;
   onGiftReceived?: (gift: GiftNotification) => void;
   onGiftListUpdated?: (gift: any) => void;
   onStreamerStatusChanged?: (data: { streamerId: string; isLive: boolean; liveChannelName: string | null }) => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [viewers, setViewers] = useState<Viewer[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const onGiftReceivedRef = useRef(options?.onGiftReceived);
   const onGiftListUpdatedRef = useRef(options?.onGiftListUpdated);
   const onStreamerStatusChangedRef = useRef(options?.onStreamerStatusChanged);
   const userNameRef = useRef(options?.userName);
+  const userIdRef = useRef(options?.userId);
   const prevStreamerIdRef = useRef<string | null>(null);
 
   // Actualizar referencias sin causar reconexión
@@ -44,7 +54,8 @@ export function useSocket(streamerId: string | null, options?: {
     onGiftListUpdatedRef.current = options?.onGiftListUpdated;
     onStreamerStatusChangedRef.current = options?.onStreamerStatusChanged;
     userNameRef.current = options?.userName;
-  }, [options?.onGiftReceived, options?.onGiftListUpdated, options?.onStreamerStatusChanged, options?.userName]);
+    userIdRef.current = options?.userId;
+  }, [options?.onGiftReceived, options?.onGiftListUpdated, options?.onStreamerStatusChanged, options?.userName, options?.userId]);
 
   // Crear socket una sola vez (singleton global)
   useEffect(() => {
@@ -109,7 +120,8 @@ export function useSocket(streamerId: string | null, options?: {
     // Unirse a la sala del streamer
     sharedSocket.emit('join-chat', {
       streamerId,
-      userName: userNameRef.current || 'Usuario'
+      userName: userNameRef.current || 'Usuario',
+      userId: userIdRef.current || null
     });
   }, [streamerId, isConnected]);
 
@@ -154,10 +166,15 @@ export function useSocket(streamerId: string | null, options?: {
       }
     };
 
+    const handleViewersUpdated = (viewersList: Viewer[]) => {
+      setViewers(viewersList);
+    };
+
     sharedSocket.on('new-message', handleNewMessage);
     sharedSocket.on('gift-received', handleGiftReceived);
     sharedSocket.on('gift-list-updated', handleGiftListUpdated);
     sharedSocket.on('streamer-status-changed', handleStreamerStatusChanged);
+    sharedSocket.on('viewers-updated', handleViewersUpdated);
 
     return () => {
       if (sharedSocket) {
@@ -165,6 +182,7 @@ export function useSocket(streamerId: string | null, options?: {
         sharedSocket.off('gift-received', handleGiftReceived);
         sharedSocket.off('gift-list-updated', handleGiftListUpdated);
         sharedSocket.off('streamer-status-changed', handleStreamerStatusChanged);
+        sharedSocket.off('viewers-updated', handleViewersUpdated);
       }
     };
   }, [streamerId]);
@@ -207,6 +225,7 @@ export function useSocket(streamerId: string | null, options?: {
 
   return {
     messages,
+    viewers,
     isConnected,
     sendMessage,
     notifyGift,

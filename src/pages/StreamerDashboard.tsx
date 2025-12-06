@@ -92,12 +92,14 @@ export default function StreamerDashboard() {
 
   const { 
     messages, 
+    viewers,
     isConnected, 
     sendMessage: sendSocketMessage,
     notifyNewGift,
     socket
   } = useSocket(currentUser?.id || null, {
     userName: currentUser?.username || currentUser?.email || 'Streamer',
+    userId: currentUser?.id,
     onGiftReceived: (giftData) => {
       setOverlayMessage(`¡${giftData.senderName} te envió ${giftData.giftEmoji} ${giftData.giftName}! +${giftData.giftPoints} pts`);
       setTimeout(() => setOverlayMessage(null), 3000);
@@ -757,9 +759,56 @@ export default function StreamerDashboard() {
           )}
         </Card>
 
-        {/* CHAT (MEDIO) */}
-        <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
-          <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Chat</Typography>
+        {/* CHAT Y ESPECTADORES (MEDIO) */}
+        <Stack spacing={2} sx={{ flex: 1 }}>
+          {/* ESPECTADORES */}
+          <Card variant="outlined" className="floating-card" sx={{ p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
+            <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>
+              👥 Espectadores en vivo ({viewers.length})
+            </Typography>
+            <Box
+              sx={{ 
+                maxHeight: 120, 
+                overflowY: 'auto', 
+                bgcolor: darkMode ? '#0f1629' : '#f8f9fa', 
+                borderRadius: 2, 
+                p: 1.5
+              }}
+            >
+              {viewers.length === 0 ? (
+                <Typography level="body-sm" sx={{ color: darkMode ? '#aaa' : 'text.secondary', textAlign: 'center', py: 2 }}>
+                  Nadie está viendo aún... 😢
+                </Typography>
+              ) : (
+                <Stack spacing={0.5}>
+                  {viewers.map((viewer) => (
+                    <Box 
+                      key={viewer.socketId}
+                      sx={{ 
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        bgcolor: darkMode ? '#1a1f3a' : 'white', 
+                        py: 0.5, 
+                        px: 1.5, 
+                        borderRadius: 1,
+                        border: `1px solid ${darkMode ? '#334155' : '#e0e0e0'}`
+                      }}
+                    >
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#10b981' }} />
+                      <Typography level="body-sm" sx={{ color: darkMode ? '#fff' : 'inherit', fontWeight: 'md' }}>
+                        {viewer.userName}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              )}
+            </Box>
+          </Card>
+
+          {/* CHAT */}
+          <Card variant="outlined" className="floating-card" sx={{ flex: 1, p: 2, bgcolor: darkMode ? '#1e293b' : 'white', borderColor: darkMode ? '#334155' : '#e0e0e0' }}>
+            <Typography level="h4" sx={{ mb: 1, fontWeight: 'lg', color: darkMode ? 'white' : 'inherit' }}>Chat</Typography>
           <Box
             ref={chatScrollRef}
             sx={{ 
@@ -817,6 +866,7 @@ export default function StreamerDashboard() {
             </Button>
           </Stack>
         </Card>
+        </Stack>
 
         {/* MÉTRICAS (DERECHA) */}
         <Card variant="outlined" className="floating-card" sx={{ 
